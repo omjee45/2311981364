@@ -19,18 +19,18 @@ initLogger({
   baseUrl: config.evalServiceUrl,
 });
 
+function safeLog(stack, level, pkg, msg) {
+  const trimmed = msg.length > 48 ? msg.substring(0, 45) + "..." : msg;
+  return Log(stack, level, pkg, trimmed).catch(() => {});
+}
+
 app.use(async (req, res, next) => {
   const start = Date.now();
   res.on("finish", async () => {
     const duration = Date.now() - start;
-    try {
-      await Log(
-        "backend",
-        res.statusCode >= 400 ? "error" : "info",
-        "middleware",
-        `${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`
-      );
-    } catch (err) {}
+    safeLog("backend", res.statusCode >= 400 ? "error" : "info", "middleware",
+      `${req.method} ${req.path} ${res.statusCode} ${duration}ms`
+    );
   });
   next();
 });
@@ -39,7 +39,7 @@ app.get("/api/notifications", async (req, res) => {
   try {
     const { page, limit, notification_type } = req.query;
 
-    await Log("backend", "info", "controller", `Fetching notifications page=${page || 1} limit=${limit || 10} type=${notification_type || "all"}`);
+    safeLog("backend", "info", "controller", `GET notifs p=${page || 1} t=${notification_type || "all"}`);
 
     const data = await fetchNotifications({
       page: page || 1,
@@ -47,11 +47,11 @@ app.get("/api/notifications", async (req, res) => {
       notification_type: notification_type || undefined,
     });
 
-    await Log("backend", "debug", "controller", `Fetched ${data.notifications?.length || 0} notifications`);
+    safeLog("backend", "debug", "controller", `Fetched ${data.notifications?.length || 0} notifs`);
 
     res.json(data);
   } catch (err) {
-    await Log("backend", "error", "controller", `Failed to fetch notifications: ${err.message}`).catch(() => {});
+    safeLog("backend", "error", "controller", `Notif fetch failed: ${err.message}`);
     res.status(500).json({ error: "Failed to fetch notifications", details: err.message });
   }
 });
@@ -60,25 +60,25 @@ app.get("/api/notifications/priority", async (req, res) => {
   try {
     const n = parseInt(req.query.n) || 10;
 
-    await Log("backend", "info", "controller", `Computing priority inbox top ${n}`);
+    safeLog("backend", "info", "controller", `Priority inbox top ${n}`);
 
     const allNotifications = await fetchAllNotifications();
 
     if (allNotifications.length === 0) {
-      await Log("backend", "warn", "controller", "No notifications found for priority computation");
+      safeLog("backend", "warn", "controller", "No notifs for priority calc");
       return res.json({ priorityNotifications: [], count: 0 });
     }
 
     const prioritized = getTopNPriority(allNotifications, n);
 
-    await Log("backend", "info", "service", `Priority inbox computed ${prioritized.length} items returned`);
+    safeLog("backend", "info", "service", `Priority done: ${prioritized.length} items`);
 
     res.json({
       priorityNotifications: prioritized,
       count: prioritized.length,
     });
   } catch (err) {
-    await Log("backend", "error", "controller", `Priority computation failed: ${err.message}`).catch(() => {});
+    safeLog("backend", "error", "controller", `Priority failed: ${err.message}`);
     res.status(500).json({ error: "Failed to compute priority inbox", details: err.message });
   }
 });
@@ -90,7 +90,7 @@ app.get("/api/notifications/stream", async (req, res) => {
     Connection: "keep-alive",
   });
 
-  await Log("backend", "info", "route", "SSE client connected").catch(() => {});
+  safeLog("backend", "info", "route", "SSE client connected");
 
   const heartbeat = setInterval(() => {
     res.write(`event: heartbeat\ndata: ${JSON.stringify({ status: "alive", timestamp: new Date().toISOString() })}\n\n`);
@@ -117,7 +117,7 @@ app.get("/api/notifications/stream", async (req, res) => {
   req.on("close", () => {
     clearInterval(heartbeat);
     clearInterval(poller);
-    Log("backend", "info", "route", "SSE client disconnected").catch(() => {});
+    safeLog("backend", "info", "route", "SSE client disconnected");
   });
 });
 
@@ -127,9 +127,5 @@ app.get("/api/health", (req, res) => {
 
 app.listen(config.port, async () => {
   console.log(`Backend running on http://localhost:${config.port}`);
-  try {
-    await Log("backend", "info", "config", `Server started on port ${config.port}`);
-  } catch (err) {
-    console.error("Initial log call failed:", err.message);
-  }
+  safeLog("backend", "info", "config", `Server started on port ${config.port}`);
 });
