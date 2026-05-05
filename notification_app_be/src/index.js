@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { initLogger, Log } = require("logging-middleware");
 const config = require("./config");
-const { fetchNotifications } = require("./notificationService");
+const { fetchNotifications, fetchAllNotifications } = require("./notificationService");
 const { getTopNPriority } = require("./priority");
 
 const app = express();
@@ -39,11 +39,11 @@ app.get("/api/notifications", async (req, res) => {
   try {
     const { page, limit, notification_type } = req.query;
 
-    await Log("backend", "info", "controller", `Fetching notifications page=${page || 1} limit=${limit || 20} type=${notification_type || "all"}`);
+    await Log("backend", "info", "controller", `Fetching notifications page=${page || 1} limit=${limit || 10} type=${notification_type || "all"}`);
 
     const data = await fetchNotifications({
       page: page || 1,
-      limit: limit || 20,
+      limit: limit || 10,
       notification_type: notification_type || undefined,
     });
 
@@ -62,8 +62,7 @@ app.get("/api/notifications/priority", async (req, res) => {
 
     await Log("backend", "info", "controller", `Computing priority inbox top ${n}`);
 
-    const data = await fetchNotifications({ limit: 100 });
-    const allNotifications = data.notifications || [];
+    const allNotifications = await fetchAllNotifications();
 
     if (allNotifications.length === 0) {
       await Log("backend", "warn", "controller", "No notifications found for priority computation");

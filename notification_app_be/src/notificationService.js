@@ -37,13 +37,15 @@ async function getEvalToken() {
 async function fetchNotifications(params = {}) {
   const token = await getEvalToken();
 
+  const limit = Math.min(Math.max(parseInt(params.limit) || 10, 5), 10);
+  const page = parseInt(params.page) || 1;
+
   const query = new URLSearchParams();
-  if (params.page) query.set("page", String(params.page));
-  if (params.limit) query.set("limit", String(params.limit));
+  query.set("page", String(page));
+  query.set("limit", String(limit));
   if (params.notification_type) query.set("notification_type", params.notification_type);
 
-  const qs = query.toString();
-  const url = `${config.evalServiceUrl}/notifications${qs ? "?" + qs : ""}`;
+  const url = `${config.evalServiceUrl}/notifications?${query.toString()}`;
 
   const resp = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
@@ -57,4 +59,31 @@ async function fetchNotifications(params = {}) {
   return resp.json();
 }
 
-module.exports = { fetchNotifications, getEvalToken };
+async function fetchAllNotifications(params = {}) {
+  const token = await getEvalToken();
+  let allNotifications = [];
+
+  for (let page = 1; page <= 10; page++) {
+    const query = new URLSearchParams();
+    query.set("page", String(page));
+    query.set("limit", "10");
+    if (params.notification_type) query.set("notification_type", params.notification_type);
+
+    const url = `${config.evalServiceUrl}/notifications?${query.toString()}`;
+    const resp = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!resp.ok) break;
+
+    const data = await resp.json();
+    const batch = data.notifications || [];
+    allNotifications = allNotifications.concat(batch);
+
+    if (batch.length < 10) break;
+  }
+
+  return allNotifications;
+}
+
+module.exports = { fetchNotifications, fetchAllNotifications, getEvalToken };
