@@ -425,20 +425,22 @@ This index is smaller (only unread rows), faster to scan, and cheaper to maintai
 
 ### Students with Placement Notifications in Last 7 Days
 
+Using the column names from the existing table (`notificationType`, `studentID`, `createdAt`):
+
 ```sql
 SELECT DISTINCT s.student_id, s.name, s.email, s.roll_no
 FROM students s
-INNER JOIN notifications n ON s.student_id = n.student_id
-WHERE n.type = 'Placement'
-  AND n.created_at >= NOW() - INTERVAL '7 days';
+INNER JOIN notifications n ON s.student_id = n.studentID
+WHERE n.notificationType = 'Placement'
+  AND n.createdAt >= NOW() - INTERVAL '7 days';
 ```
 
 Supporting index:
 
 ```sql
 CREATE INDEX idx_notif_placement_recent
-    ON notifications (type, created_at DESC)
-    WHERE type = 'Placement';
+    ON notifications (notificationType, createdAt DESC)
+    WHERE notificationType = 'Placement';
 ```
 
 ---
@@ -718,9 +720,12 @@ This is much better than re-sorting the entire list on every new notification (O
 
 ### Implementation
 
-See `notification_app_be/src/priority.js` for the working implementation that:
-1. Fetches notifications from the evaluation service API
-2. Computes priority scores using the formula above
-3. Returns the top-N notifications using a min-heap
+The standalone script is at `stage6_priority_inbox.js` in the repository root. It:
+1. Authenticates with the evaluation service API
+2. Fetches all available notifications across multiple pages
+3. Computes priority scores using the formula above
+4. Extracts the top 10 using a min-heap and prints them ranked
 
-The implementation is also used by the backend API at `GET /api/notifications/priority?n=10`.
+Output screenshot: `stage6_output.png`
+
+The same priority logic is reused in `notification_app_be/src/priority.js` and served via the backend API at `GET /api/notifications/priority?n=10`.
