@@ -1,36 +1,43 @@
 # Campus Notification Platform
 
-A full-stack notification system for real-time campus updates — placements, events, and results.
+Full-stack notification system for real-time campus updates — placements, events, and results.
 
 ## Project Structure
 
 ```
-├── logging_middleware/      # Reusable logging package (npm)
-├── notification_app_be/     # Express.js backend API
-├── notification_app_fe/     # Next.js frontend application
-└── notification_system_design.md
+├── logging_middleware/         # Reusable logging package (npm)
+├── notification_app_be/        # Express.js backend API
+├── notification_app_fe/        # React (Vite) frontend app
+├── notification_system_design.md
+└── .gitignore
 ```
 
-## Quick Start
+## Setup
 
-### Logging Middleware
+### 1. Logging Middleware
 ```bash
-cd logging_middleware && npm install && npm run build
+cd logging_middleware
+npm test
 ```
 
-### Backend
+### 2. Backend (runs on port 5000)
 ```bash
-cd notification_app_be && npm install && npm run dev
+cd notification_app_be
+npm install
+npm run dev
 ```
 
-### Frontend
+### 3. Frontend (runs on port 3000)
 ```bash
-cd notification_app_fe && npm install && npm run dev
+cd notification_app_fe
+npm install
+npm run dev
 ```
-Frontend runs at `http://localhost:3000`
+
+Open `http://localhost:3000` in your browser. Make sure the backend is running first.
 
 ## Tech Stack
-- **Logging**: TypeScript, reusable npm package
-- **Backend**: Node.js, Express, MongoDB, TypeScript
-- **Frontend**: Next.js 14, React, Material UI, TypeScript
-- **Database**: MongoDB (for caching and read-tracking)
+- **Logging**: JavaScript, reusable npm package
+- **Backend**: Node.js, Express.js
+- **Frontend**: React 19, Vite, Material UI
+- **Real-time**: Server-Sent Events (SSE)

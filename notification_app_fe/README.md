@@ -1,16 +1,26 @@
-# React + Vite
+# Notification App — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React-based frontend for the campus notification platform.
 
-Currently, two official plugins are available:
+## Pages
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **/** — All notifications with pagination and type filtering (Placement / Event / Result)
+- **/priority** — Priority inbox showing top-N notifications ranked by importance and recency
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Material UI dark theme
+- Type-based filtering (Placement, Event, Result)
+- Pagination support
+- Priority inbox with adjustable top-N slider (5, 10, 15, 20)
+- New vs viewed notification tracking (persisted in localStorage)
+- Responsive layout for desktop and mobile
 
-## Expanding the ESLint configuration
+## Running
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+Opens at `http://localhost:3000`. Backend must be running on port 5000.
