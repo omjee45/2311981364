@@ -1,31 +1,22 @@
-# Notification App — Frontend
+# Notification Frontend
 
-React-based frontend for the campus notification platform. Scaffolded with Vite and styled using Material UI's dark theme.
+React frontend for the campus notification app. Uses Vite and Material UI.
 
 ## Pages
-
-- **/** — All notifications with pagination and type filtering (Placement / Event / Result)
-- **/priority** — Priority inbox showing top-N notifications ranked by importance and recency
+- `/` - All notifications (with pagination and filters)
+- `/priority` - Priority inbox showing top notifications
 
 ## Features
+- Dark theme
+- Filters for Placement, Event, Result
+- Slider to change top N notifications
+- Client-side viewed tracking using localStorage
+- Skeleton loading screens
 
-- Material UI dark theme with custom color palette (purple primary, cyan accent)
-- Type-based filtering using toggle buttons
-- Pagination (10 items per page, controlled by the backend)
-- Priority inbox with adjustable top-N slider (5, 10, 15, 20)
-- Client-side viewed/unviewed tracking using localStorage (since the eval API does not support per-user read status)
-- Skeleton loading states to avoid layout shift during API calls
-- Responsive layout for desktop and mobile
-
-## Architecture
-
-The frontend does not talk to the evaluation service directly. All API calls go through the Express backend running on port 5000. In development, Vite's proxy (configured in `vite.config.js`) forwards `/api/*` requests to the backend automatically.
-
-## Running
+## Run
+Backend must be running on port 5000 first (Vite proxy sends `/api/*` to it).
 
 ```bash
 npm install
 npm run dev
 ```
-
-Opens at `http://localhost:3000`. The backend must be running on port 5000 first.
